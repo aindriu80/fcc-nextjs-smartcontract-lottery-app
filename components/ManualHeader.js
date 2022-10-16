@@ -1,14 +1,28 @@
 import { useEffect } from 'react'
 import { useMoralis } from 'react-moralis'
 export default function ManualHeader() {
-  const { enableWeb3, account, isWeb3Enabled } = useMoralis()
+  const { enableWeb3, account, isWeb3Enabled, Moralis, deactivateWeb3 } =
+    useMoralis()
+
   useEffect(() => {
-    console.log('useEffect.....')
-    console.log(isWeb3Enabled)
-  }, [])
-  // no dependency array : run anytime something re-renders
-  // CAREFUL with this!! because you can get circular render
-  // blnnk dependency array, only run once.
+    if (isWeb3Enabled) return
+    if (typeof window !== 'undefined') {
+      if (window.localStorage.getItem('connected')) {
+        enableWeb3()
+      }
+    }
+  }, [enableWeb3, isWeb3Enabled])
+
+  useEffect(() => {
+    Moralis.onAccountChanged((account) => {
+      console.log(`Account changed to ${account}`)
+      if (account === null) {
+        window.localStorage.removeItem('connected')
+        deactivateWeb3()
+        console.log('Null account found')
+      }
+    })
+  }, [Moralis, deactivateWeb3, isWeb3Enabled])
 
   return (
     <div>
@@ -18,6 +32,9 @@ export default function ManualHeader() {
         <button
           onClick={async () => {
             await enableWeb3()
+            if (typeof window !== 'undefined') {
+              window.localStorage.setItem('connected', 'injected')
+            }
           }}>
           Connect
         </button>
