@@ -1,8 +1,7 @@
 // Creating a function to enter the lottery
 import { useEffect, useState } from 'react'
-import { useWeb3Contract } from 'react-moralis'
+import { useMoralis, useWeb3Contract } from 'react-moralis'
 import { abi, contractAddresses } from '../constants'
-import { useMoralis } from 'react-moralis'
 import { ethers } from 'ethers'
 
 export default function LotteryEntrance() {
@@ -10,8 +9,7 @@ export default function LotteryEntrance() {
   const chainId = parseInt(chainIdHex)
   const raffleAddress =
     chainId in contractAddresses ? contractAddresses[chainId][0] : null
-
-  const { entranceFee, setEntranceFee } = useState('0')
+  const [entranceFee, setEntranceFee] = useState('0')
 
   // const { runContractFunction: raffle } = useWeb3Contract({
   //   abi: abi,
@@ -33,12 +31,17 @@ export default function LotteryEntrance() {
       // try to read the raffle entrance fee
       async function updatedUI() {
         const entranceFeeFromCall = (await getEntranceFee()).toString()
-        setEntranceFee(ethers.utils.formatUnits(entranceFeeFromCall, 'ethers'))
-        console.log(entranceFee)
+        setEntranceFee(ethers.utils.formatUnits(entranceFeeFromCall, 'ether'))
       }
       updatedUI()
     }
-  }, [getEntranceFee, isWeb3Enabled])
+  }, [entranceFee, getEntranceFee, isWeb3Enabled, setEntranceFee])
 
-  return <div>Hello from Lottery Entrance, Entrance Fee:{entranceFee} </div>
+  return (
+    <div>
+      <br />
+      Hello from Lottery Entrance, <br />
+      Entrance Fee: {entranceFee} ETH
+    </div>
+  )
 }
