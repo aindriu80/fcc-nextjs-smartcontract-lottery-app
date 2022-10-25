@@ -15,7 +15,11 @@ export default function LotteryEntrance() {
   const [numPlayers, setNumPlayers] = useState('0')
   const [recentWinner, setRecentWinner] = useState('0')
 
-  const { runContractFunction: enterRaffle } = useWeb3Contract({
+  const {
+    runContractFunction: enterRaffle,
+    isLoading,
+    isFetching,
+  } = useWeb3Contract({
     abi: abi,
     contractAddress: raffleAddress, // specify the networkID
     functionName: 'enterRaffle',
@@ -75,18 +79,20 @@ export default function LotteryEntrance() {
   }
 
   return (
-    <div>
+    <div className="p-5">
       Hello from Lottery Entrance {console.log(raffleAddress)}
       <br />
       {raffleAddress ? (
         <div>
           <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded ml-auto"
             onClick={async function () {
               await enterRaffle({
                 onSuccess: handleSuccess,
                 onError: (error) => console.log(error),
               })
-            }}>
+            }}
+            disabled={isLoading || isFetching}>
             Enter Raffle
           </button>
           <br />
