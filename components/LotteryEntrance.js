@@ -14,6 +14,7 @@ export default function LotteryEntrance() {
   const [entranceFee, setEntranceFee] = useState('0')
   const [numPlayers, setNumPlayers] = useState('0')
   const [recentWinner, setRecentWinner] = useState('0')
+  console.log(raffleAddress)
 
   const {
     runContractFunction: enterRaffle,
@@ -27,84 +28,88 @@ export default function LotteryEntrance() {
     msgValue: entranceFee,
   })
 
-  const { runContractFunction: getEntranceFee } = useWeb3Contract({
-    abi: abi,
-    contractAddress: raffleAddress, // specify the networkID
-    functionName: 'getEntranceFee',
-    params: {},
-  })
+const { runContractFunction: getEntranceFee } = useWeb3Contract({
+  abi: abi,
+  contractAddress: raffleAddress, // specify the networkID
+  functionName: 'getEntranceFee',
+  params: {},
+})
 
-  const { runContractFunction: getNumberOfPlayers } = useWeb3Contract({
-    abi: abi,
-    contractAddress: raffleAddress, // specify the networkID
-    functionName: 'getNumberOfPlayers',
-    params: {},
-  })
+const { runContractFunction: getNumberOfPlayers } = useWeb3Contract({
+  abi: abi,
+  contractAddress: raffleAddress, // specify the networkID
+  functionName: 'getNumberOfPlayers',
+  params: {},
+})
 
-  const { runContractFunction: getRecentWinner } = useWeb3Contract({
-    abi: abi,
-    contractAddress: raffleAddress, // specify the networkID
-    functionName: 'getRecentWinner',
-    params: {},
-  })
+const { runContractFunction: getRecentWinner } = useWeb3Contract({
+  abi: abi,
+  contractAddress: raffleAddress, // specify the networkID
+  functionName: 'getRecentWinner',
+  params: {},
+})
 
-  async function updateUI() {
-    // try to read the raffle entrance fee
-    const entranceFeeFromCall = await getEntranceFee()
-    const numPlayersFromCall = await getNumberOfPlayers().toString()
-    const recentWinnerFromCall = await getRecentWinner().toString
-    setEntranceFee(entranceFeeFromCall)
-    setNumPlayers(numPlayersFromCall)
-    setRecentWinner(recentWinnerFromCall)
-  }
+async function updateUI() {
+  // try to read the raffle entrance fee
+  const entranceFeeFromCall = await getEntranceFee()
+  const numPlayersFromCall = await getNumberOfPlayers().toString()
+  const recentWinnerFromCall = await getRecentWinner().toString
+  setEntranceFee(entranceFeeFromCall)
+  setNumPlayers(numPlayersFromCall)
+  setRecentWinner(recentWinnerFromCall)
+}
 
-  useEffect(() => {
-    if (isWeb3Enabled) {
-      updateUI()
-    }
-  }, [entranceFee, getEntranceFee, isWeb3Enabled, setEntranceFee])
-
-  const handleSuccess = async function (tx) {
-    await tx.wait(1)
-    handleNewNotification(tx)
+useEffect(() => {
+  if (isWeb3Enabled) {
     updateUI()
   }
-  const handleNewNotification = function () {
-    dispatch({
-      type: 'success',
-      message: 'Transaction Complete!',
-      title: 'Tx Notification',
-      position: 'topR',
-    })
-  }
+}, [entranceFee, getEntranceFee, isWeb3Enabled, setEntranceFee])
 
-  return (
-    <div className="p-5">
-      Hello from Lottery Entrance {console.log(raffleAddress)}
-      <br />
-      {raffleAddress ? (
-        <div>
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded ml-auto"
-            onClick={async function () {
-              await enterRaffle({
-                onSuccess: handleSuccess,
-                onError: (error) => console.log(error),
-              })
-            }}
-            disabled={isLoading || isFetching}>
-            Enter Raffle
-          </button>
-          <br />
-          Entrance Fee: {ethers.utils.formatUnits(entranceFee, 'ether')} ETH
-          <br />
-          Number of Players{numPlayers}
-          <br />
-          Recent Winner {recentWinner}
-        </div>
-      ) : (
-        <div>No Raffle Address Deteched</div>
-      )}
-    </div>
-  )
+const handleSuccess = async function (tx) {
+  await tx.wait(1)
+  handleNewNotification(tx)
+  updateUI()
+}
+const handleNewNotification = function () {
+  dispatch({
+    type: 'success',
+    message: 'Transaction Complete!',
+    title: 'Tx Notification',
+    position: 'topR',
+  })
+}
+
+return (
+  <div className="p-5">
+    Hello from Lottery Entrance
+    <br />
+    {raffleAddress ? (
+      <div>
+        <button
+          className="px-2 py-2 ml-auto font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+          onClick={async function () {
+            await enterRaffle({
+              onSuccess: handleSuccess,
+              onError: (error) => console.log(error),
+            })
+          }}
+          disabled={isLoading || isFetching}>
+          {isLoading || isFetching ? (
+            <div className="w-8 h-8 border-b-2 animate-spin spinner-border"></div>
+          ) : (
+            <div>Enter Raffle</div>
+          )}
+        </button>
+        <br />
+        Entrance Fee: {ethers.utils.formatUnits(entranceFee, 'ether')} ETH
+        <br />
+        Number of Players{numPlayers}
+        <br />
+        Recent Winner {recentWinner}
+      </div>
+    ) : (
+      <div>No Raffle Address Detected</div>
+    )}
+  </div>
+)
 }
